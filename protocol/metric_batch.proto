@@ -1,0 +1,23 @@
+// Reference schema. The Go implementation writes/reads this protobuf wire format without protoc-generated code.
+syntax = "proto3";
+package pur.v2;
+
+message MetricBatch {
+  uint32 protocol_version = 1;
+  bytes sender_id = 2;
+  uint64 sequence = 3;
+  int64 created_at_ms = 4;
+  bool full = 5;
+  repeated string dictionary = 6;
+  repeated SeriesDefinition definitions = 7;
+  repeated Sample samples = 8;
+  repeated uint32 deleted_wire_ids = 9;
+}
+message LabelRef { uint32 key_id = 1; uint32 value_id = 2; }
+message SeriesDefinition {
+  uint32 wire_id = 1;
+  bytes series_id = 2;
+  uint32 metric_name_id = 3;
+  repeated LabelRef labels = 4;
+}
+message Sample { uint32 wire_id = 1; fixed64 value_bits = 2; int64 timestamp_ms = 3; }

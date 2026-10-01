@@ -1,0 +1,45 @@
+replicaCount: 1
+image:
+  repository: prom-udp-receiver
+  tag: "2.3.1"
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+secret:
+  existingSecret: ""
+  key: PUR_SECRET
+  value: ""
+receiver:
+  udpPort: 19090
+  httpPort: 8080
+  reassemblyTimeout: 10s
+  maxCompressedBytes: 8388608
+  maxUncompressedBytes: 67108864
+  maxPacketBytes: 65507
+  udpReceiveBufferBytes: 4194304
+  preserveSourceTimestamps: false
+udpService:
+  type: NodePort
+  port: 19090
+  nodePort: 31909
+  externalTrafficPolicy: Cluster
+metricsService:
+  port: 8080
+serviceMonitor:
+  enabled: false
+  interval: 15s
+  scrapeTimeout: 10s
+  path: /metrics
+  honorLabels: true
+  labels: {}
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}

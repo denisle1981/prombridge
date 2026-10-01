@@ -1,0 +1,144 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    restart: unless-stopped
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+      - "--web.enable-lifecycle"
+
+  grafana:
+    image: grafana/grafana:12.0.3
+    container_name: grafana
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+    depends_on:
+      - prometheus
+
+  prombridge-agent:
+    build:
+      context: ..
+      dockerfile: Dockerfile.sender
+    image: prombridge-agent:2.3.1
+    container_name: prombridge-agent
+    restart: unless-stopped
+    environment:
+      PUR_SECRET: "REMOVED_SECRET"
+    command:
+      - "--source-url=http://prometheus:9090/federate"
+
+      # JOB label filter. Prometheus regex semantics are used.
+      # Examples:
+      #   .+                               -> all jobs
+      #   windows-exporter                -> exactly one job
+      #   windows-exporter|custom-exporter -> either job
+      #   windows-.*                      -> jobs beginning with windows-
+      - '--job-regex=windows-exporter|custom-exporter'
+
+
+      # Metric-name allow-list. Extend this expression with application/custom
+      # exporter metric families required from Docker workloads on this host.
+      # The Windows families below cover availability, CPU, memory, disk,
+      # network utilization, and RX/TX packet error-rate alerting.
+      #- '--metric-regex=up|windows_cpu_time_total|windows_memory_physical_free_bytes|windows_memory_physical_total_bytes|windows_logical_disk_free_bytes|windows_logical_disk_size_bytes|windows_net_current_bandwidth_bytes|windows_net_bytes_received_total|windows_net_bytes_sent_total|windows_net_packets_received_errors_total|windows_net_packets_received_total|windows_net_packets_outbound_errors_total|windows_net_packets_sent_total'
+      #- '--metric-regex=windows_.*'
+      - '--metric-regex=windows_.*|prombridge_stress_.*'
+
+      # Startup behavior:
+      # full    -> send current complete state immediately (full=true)
+      # current -> use the first scrape only as a local baseline and transmit
+      #            only changes/new/deleted series observed after startup
+      - "--startup-mode=current"
+
+      # delta    -> changed/new/deleted series only
+      # snapshot -> all current samples every interval (legacy behavior)
+      - "--send-mode=delta"
+
+      - "--dest-host=prombridge_receiver"
+      - "--dest-port=19090"
+      - "--interval=15s"
+      - "--mtu=1200"
+      - "--packet-delay=1ms"
+      - "--compression=gzip-best"
+      - "--full-sync-interval=5m"
+      - "--snapshot-queue=1"
+      - "--metrics-listen=:9091"
+      - "--udp-send-buffer-bytes=4194304"
+
+      # Hard PromBridge UDP payload shaping ceiling: 4 KB/s.
+      - "--max-bandwidth-bytes-per-second=4096"
+      - "--http-timeout=30s"
+      - "--max-body-bytes=67108864"
+    ports:
+      - "9091:9091"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - prometheus
+
+  prombridge_receiver:
+    build:
+      context: ..
+      dockerfile: Dockerfile.receiver
+    image: prombridge-gateway:2.3.1
+    container_name: prombridge_receiver
+    restart: unless-stopped
+
+    environment:
+      PUR_SECRET: "REMOVED_SECRET"
+
+    ports:
+      - "19090:19090/udp"
+      - "8080:8080/tcp"
+
+    command:
+      - "--udp-listen=:19090"
+      - "--http-listen=:8080"
+      - "--reassembly-timeout=10s"
+      - "--max-compressed-bytes=8388608"
+      - "--max-uncompressed-bytes=67108864"
+      - "--max-packet-bytes=65507"
+      - "--udp-receive-buffer-bytes=4194304"
+      - "--preserve-source-timestamps=false"
+
+    depends_on:
+      - prometheus
+
+  stress-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.stress
+    image: prombridge-stress-exporter:1.0
+    container_name: prombridge-stress-exporter
+    restart: unless-stopped
+
+    environment:
+      SERIES_COUNT: "10000"
+      PORT: "9183"
+
+    ports:
+      - "9183:9183"
+
+volumes:
+  prometheus-data:
+  grafana-data:

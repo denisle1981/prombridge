@@ -1,0 +1,17 @@
+FROM golang:1.23-alpine AS build
+WORKDIR /src
+COPY go.mod ./
+RUN go mod download
+COPY cmd ./cmd
+COPY internal ./internal
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -trimpath \
+    -ldflags='-s -w' \
+    -o /out/prom-udp-receiver \
+    ./cmd/receiver
+
+FROM scratch
+COPY --from=build /out/prom-udp-receiver /prom-udp-receiver
+USER 65532:65532
+EXPOSE 19090/udp 8080/tcp
+ENTRYPOINT ["/prom-udp-receiver"]

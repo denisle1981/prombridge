@@ -1,0 +1,9 @@
+FROM python:3.13-alpine
+
+WORKDIR /app
+
+COPY stress-exporter.py /app/stress-exporter.py
+
+EXPOSE 9183
+
+CMD ["python", "/app/stress-exporter.py"]

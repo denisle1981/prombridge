@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pur.fullname" . }}-udp
+  labels:
+    {{- include "pur.labels" . | nindent 4 }}
+spec:
+  publishNotReadyAddresses: true
+  type: {{ .Values.udpService.type }}
+  externalTrafficPolicy: {{ .Values.udpService.externalTrafficPolicy }}
+  selector:
+    app.kubernetes.io/name: {{ include "pur.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: udp
+      protocol: UDP
+      port: {{ .Values.udpService.port }}
+      targetPort: udp
+      {{- if and (eq .Values.udpService.type "NodePort") .Values.udpService.nodePort }}
+      nodePort: {{ .Values.udpService.nodePort }}
+      {{- end }}
