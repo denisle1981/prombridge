@@ -1483,10 +1483,12 @@ progress continues.
   `--metrics-listen`                                               `:9091` Sender self-metrics
                                                                            address
 
+
   `--udp-send-buffer-bytes`                                        `4 MiB` UDP socket send
                                                                            buffer
   `--match`                                                            --- Additional repeatable
                                                                            federation selector
+  
   ----------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
