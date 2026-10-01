@@ -1598,3 +1598,8 @@ network limits approved for the target environment.
 
 ## 41. Dashboard example
 
+### Transport and bandwidth overview
+
+![PromBridge Transport and Bandwidth dashboard - Part 1](./media/PromBridge_Transport_Bandwidth_part1.png)
+
+![PromBridge Transport and Bandwidth dashboard - Part 2](./media/PromBridge_Transport_Bandwidth_part2.png)
