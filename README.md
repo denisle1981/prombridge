@@ -1486,6 +1486,7 @@ progress continues.
 
   `--udp-send-buffer-bytes`                                        `4 MiB` UDP socket send
                                                                            buffer
+                                                                           
   `--match`                                                            --- Additional repeatable
                                                                            federation selector
   
