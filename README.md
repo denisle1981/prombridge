@@ -1485,7 +1485,6 @@ progress continues.
 
   `--udp-send-buffer-bytes`                                        `4 MiB` UDP socket send
                                                                            buffer
-
   `--match`                                                            --- Additional repeatable
                                                                            federation selector
   ----------------------------------------------------------------------------------------------
@@ -1517,8 +1516,9 @@ progress continues.
   `--udp-receive-buffer-bytes`                          `8 MiB` UDP socket receive
                                                                 buffer
 
-  `--preserve-source-timestamps`                        `false` Preserve original
+   `--preserve-source-timestamps`                        `false` Preserve original
                                                                 sample timestamps
+  
   -----------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
