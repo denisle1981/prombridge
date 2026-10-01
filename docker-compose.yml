@@ -43,7 +43,7 @@ services:
     container_name: prombridge-agent
     restart: unless-stopped
     environment:
-      PUR_SECRET: "REMOVED_SECRET"
+      PUR_SECRET: ""
     command:
       - "--source-url=http://prometheus:9090/federate"
 
@@ -105,7 +105,7 @@ services:
     restart: unless-stopped
 
     environment:
-      PUR_SECRET: "REMOVED_SECRET"
+      PUR_SECRET: ""
 
     ports:
       - "19090:19090/udp"
