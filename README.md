@@ -1595,3 +1595,6 @@ instead.
 The final job filter, metric allow-list, interval, and bandwidth
 allocation must be selected according to the monitoring requirements and
 network limits approved for the target environment.
+
+## 41. Dashboard example
+
